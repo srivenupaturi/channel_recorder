@@ -1,0 +1,45 @@
+<%= form_for(@recording_event) do |f| %>
+  <% if @recording_event.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@recording_event.errors.count, "error") %> prohibited this recording_event from being saved:</h2>
+
+      <ul>
+      <% @recording_event.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :user_id %><br />
+    <%= f.number_field :user_id %>
+  </div>
+  <div class="field">
+    <%= f.label :channel_id %><br />
+    <%= f.number_field :channel_id %>
+  </div>
+  <div class="field">
+    <%= f.label :start_time %><br />
+    <%= f.datetime_select :start_time %>
+  </div>
+  <div class="field">
+    <%= f.label :end_time %><br />
+    <%= f.datetime_select :end_time %>
+  </div>
+  <div class="field">
+    <%= f.label :priority %><br />
+    <%= f.number_field :priority %>
+  </div>
+  <div class="field">
+    <%= f.label :recurring %><br />
+    <%= f.number_field :recurring %>
+  </div>
+  <div class="field">
+    <%= f.label :enabled %><br />
+    <%= f.check_box :enabled %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

@@ -1,0 +1,35 @@
+<h1>Listing recording_events</h1>
+
+<table>
+  <tr>
+    <th>User</th>
+    <th>Channel</th>
+    <th>Start time</th>
+    <th>End time</th>
+    <th>Priority</th>
+    <th>Recurring</th>
+    <th>Enabled</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @recording_events.each do |recording_event| %>
+  <tr>
+    <td><%= recording_event.user_id %></td>
+    <td><%= recording_event.channel_id %></td>
+    <td><%= recording_event.start_time %></td>
+    <td><%= recording_event.end_time %></td>
+    <td><%= recording_event.priority %></td>
+    <td><%= recording_event.recurring %></td>
+    <td><%= recording_event.enabled %></td>
+    <td><%= link_to 'Show', recording_event %></td>
+    <td><%= link_to 'Edit', edit_recording_event_path(recording_event) %></td>
+    <td><%= link_to 'Destroy', recording_event, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Recording event', new_recording_event_path %>

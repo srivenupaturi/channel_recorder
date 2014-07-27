@@ -1,0 +1,40 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>User:</b>
+  <%= @recording_event.user_id %>
+</p>
+
+<p>
+  <b>Channel:</b>
+  <%= @recording_event.channel_id %>
+</p>
+
+<p>
+  <b>Start time:</b>
+  <%= @recording_event.start_time %>
+</p>
+
+<p>
+  <b>End time:</b>
+  <%= @recording_event.end_time %>
+</p>
+
+<p>
+  <b>Priority:</b>
+  <%= @recording_event.priority %>
+</p>
+
+<p>
+  <b>Recurring:</b>
+  <%= @recording_event.recurring %>
+</p>
+
+<p>
+  <b>Enabled:</b>
+  <%= @recording_event.enabled %>
+</p>
+
+
+<%= link_to 'Edit', edit_recording_event_path(@recording_event) %> |
+<%= link_to 'Back', recording_events_path %>
