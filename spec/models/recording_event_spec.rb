@@ -2,15 +2,15 @@ require 'spec_helper'
 
 describe RecordingEvent do
 
+  let(:user) { create_user }
   let(:attributes) { { :channel_id => 3, 
-                     :user_id => 1,
+                     :user_id => user.id,
                      :enabled => true,
                      :start_time => Time.now + 1.hour,
                      :end_time => Time.now + 2.hour,
                      :priority => 2,
                      :recurring => 1 }
                    }
-
 
   describe '#validations' do
     it "should fail for priority less than 1" do
@@ -52,6 +52,54 @@ describe RecordingEvent do
     it "should pass for recurring set in range" do
       attributes[:recurring] = 2
       expect(RecordingEvent.new(attributes)).to have(0).error_on(:recurring)
+    end
+  end
+
+  describe "#detect_conflicts_with_priority" do
+    before do
+      @existing_event = RecordingEvent.create!( :channel_id => 3,
+                     :user_id => user.id,
+                     :enabled => true,
+                     :start_time => Time.now + 1.hour,
+                     :end_time => Time.now + 5.hour,
+                     :priority => 2,
+                     :recurring => 1 
+                    )
+      @new_event = RecordingEvent.new( :channel_id => 4,
+                     :user_id => user.id,
+                     :enabled => true,
+                     :priority => 2,
+                     :recurring => 1
+                    )
+    end
+
+    it "should detect a conflict when a new event partially overlaps with an exisitng event" do
+      @new_event.start_time = Time.now
+      @new_event.end_time = Time.now + 2.hour
+      clashed_events = @new_event.detect_conflicts_with_priority
+      clashed_events.first.id.should == @existing_event.id
+    end
+
+    it "should detect a conflict when a new event fully overlaps with an existing event" do
+      @new_event.start_time = Time.now + 2.hour
+      @new_event.end_time = Time.now + 3.hour
+      clashed_events = @new_event.detect_conflicts_with_priority
+      clashed_events.first.id.should == @existing_event.id
+    end
+
+    it "should detect a conflict when an existing event fully overlaps with a new event" do
+      @new_event.start_time = Time.now
+      @new_event.end_time = Time.now + 6.hour
+      clashed_events = @new_event.detect_conflicts_with_priority
+      clashed_events.first.id.should == @existing_event.id
+    end
+
+    it "should not detect a conflict when a new event with higher priority overlaps with an exisitng event" do
+      @new_event.priority = 3
+      @new_event.start_time = Time.now
+      @new_event.end_time = Time.now + 2.hour
+      clashed_events = @new_event.detect_conflicts_with_priority
+      clashed_events.size.should == 0
     end
   end
 end

@@ -2,7 +2,9 @@ require 'spec_helper'
 
 describe RecordingEventsController do
 
-  let(:valid_attributes) { { "user_id" => "1", 'channel_id' => 2, 'start_time' => Time.now, 'end_time' => (Time.now + 1.hour), 'priority' => 2, 'recurring' => 2 } }
+  let(:user) { create_user }
+
+  let(:valid_attributes) { { "user_id" => user.id, 'channel_id' => 2, 'start_time' => Time.now, 'end_time' => (Time.now + 1.hour), 'priority' => 2, 'recurring' => 2 } }
 
   let(:valid_session) { {} }
 
@@ -82,8 +84,8 @@ describe RecordingEventsController do
         # specifies that the RecordingEvent created on the previous line
         # receives the :update_attributes message with whatever params are
         # submitted in the request.
-        RecordingEvent.any_instance.should_receive(:update_attributes).with({ "user_id" => "1" })
-        put :update, {:id => recording_event.to_param, :recording_event => { "user_id" => "1" }}, valid_session
+        RecordingEvent.any_instance.should_receive(:update_attributes).with({ "user_id" => user.id.to_s })
+        put :update, {:id => recording_event.to_param, :recording_event => { "user_id" => user.id.to_s }}, valid_session
       end
 
       it "assigns the requested recording_event as @recording_event" do
