@@ -16,3 +16,10 @@ end
 def create_user
   User.create!('email' => 'test@channel_recorder.com', 'fname' => 'Abc', 'lname' => 'Xyz')
 end
+
+# comparing time stamps
+RSpec::Matchers.define :be_same_time_as do |expected|
+  match do |actual|
+    expected.to_i == actual.to_i
+  end
+end

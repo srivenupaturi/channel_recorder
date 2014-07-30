@@ -55,7 +55,7 @@ describe RecordingEvent do
     end
   end
 
-  describe "#detect_conflicts_with_priority" do
+  describe "#detect_conflict_events_with_priority" do
     before do
       @existing_event = RecordingEvent.create!( :channel_id => 3,
                      :user_id => user.id,
@@ -76,21 +76,21 @@ describe RecordingEvent do
     it "should detect a conflict when a new event partially overlaps with an exisitng event" do
       @new_event.start_time = Time.now
       @new_event.end_time = Time.now + 2.hour
-      clashed_events = @new_event.detect_conflicts_with_priority
+      clashed_events = @new_event.detect_conflict_events_with_priority
       clashed_events.first.id.should == @existing_event.id
     end
 
     it "should detect a conflict when a new event fully overlaps with an existing event" do
       @new_event.start_time = Time.now + 2.hour
       @new_event.end_time = Time.now + 3.hour
-      clashed_events = @new_event.detect_conflicts_with_priority
+      clashed_events = @new_event.detect_conflict_events_with_priority
       clashed_events.first.id.should == @existing_event.id
     end
 
     it "should detect a conflict when an existing event fully overlaps with a new event" do
       @new_event.start_time = Time.now
       @new_event.end_time = Time.now + 6.hour
-      clashed_events = @new_event.detect_conflicts_with_priority
+      clashed_events = @new_event.detect_conflict_events_with_priority
       clashed_events.first.id.should == @existing_event.id
     end
 
@@ -98,8 +98,59 @@ describe RecordingEvent do
       @new_event.priority = 3
       @new_event.start_time = Time.now
       @new_event.end_time = Time.now + 2.hour
-      clashed_events = @new_event.detect_conflicts_with_priority
+      clashed_events = @new_event.detect_conflict_events_with_priority
       clashed_events.size.should == 0
     end
   end
+
+  describe "#fix_resolvable_conflict_events" do
+    before do
+      @existing_event = RecordingEvent.create!( :channel_id => 3,
+                     :user_id => user.id,
+                     :enabled => true,
+                     :start_time => Time.now + 1.hour,
+                     :end_time => Time.now + 5.hour,
+                     :priority => 2,
+                     :recurring => 1 
+                    )
+      @new_event = RecordingEvent.new( :channel_id => 4,
+                     :user_id => user.id,
+                     :enabled => true,
+                     :priority => 3, # higher than existing event's priority
+                     :recurring => 1
+                    )
+    end
+
+    it "should be able to resolve TYPE-1 conflict" do
+      @new_event.start_time = Time.now + 2.hour
+      @new_event.end_time = Time.now + 3.hour
+      RecordingEvent.fix_resolvable_conflict_events(@new_event, @existing_event, 'TYPE-1')
+      events = user.recording_events
+      events.size.should == 2
+      events.first.end_time.should be_same_time_as @new_event.start_time
+      events.last.start_time.should be_same_time_as @new_event.end_time
+    end
+
+    it "should be able to resolve TYPE-2 conflict" do
+      @new_event.start_time = Time.now 
+      @new_event.end_time = Time.now + 3.hour
+      RecordingEvent.fix_resolvable_conflict_events(@new_event, @existing_event, 'TYPE-2')
+      @existing_event.reload.start_time.should be_same_time_as @new_event.end_time
+    end
+
+    it "should be able to resolve TYPE-1 conflict" do
+      @new_event.start_time = Time.now  + 4.hour
+      @new_event.end_time = Time.now + 7.hour
+      RecordingEvent.fix_resolvable_conflict_events(@new_event, @existing_event, 'TYPE-3')
+      @existing_event.reload.end_time.should be_same_time_as @new_event.start_time
+    end
+
+    it "should be able to resolve TYPE-4 conflict" do
+      @new_event.start_time = Time.now
+      @new_event.end_time = Time.now + 7.hour
+      RecordingEvent.fix_resolvable_conflict_events(@new_event, @existing_event, 'TYPE-4')
+      @existing_event.reload.enabled.should be_false
+    end
+ end
+
 end
